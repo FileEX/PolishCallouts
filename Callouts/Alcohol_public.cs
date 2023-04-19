@@ -181,15 +181,17 @@ namespace Polish_Callouts.Callouts
 
         public override void End()
         {
-            if (SuspectBlip) SuspectBlip.Delete();
+            if (SuspectBlip) SuspectBlip.Delete(); SuspectBlip = null;
             if (Suspect) Suspect.Dismiss();
-            if (Blip) Blip.Delete();
+            if (Blip) Blip.Delete(); Blip = null;
 
             if (helpDisplayed)
                 Game.HideHelp();
 
             if (!Game.LocalPlayer.Character.IsDead)
                 Functions.PlayScannerAudio("ALL_UNITS_CODE4 NO_FURTHER_UNITS_REQUIRED");
+
+            Game.DisplayNotification("~b~Code 4. ~w~No further units required");
 
             Game.LogTrivial("[PLC] Alcohol_Public callouts has been ended (scenario: " + Scenario.ToString() + ")");
             base.End();
