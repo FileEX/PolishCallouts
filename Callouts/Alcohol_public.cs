@@ -19,12 +19,12 @@ namespace Polish_Callouts.Callouts
         private protected int LocIndex;
         private protected int Scenario;
         private LHandle Pursuit;
-        private bool helpDisplayed;
         private Random rand = new Random();
-        private bool CalloutRunning;
+        private bool _CalloutIsRunning;
+        private Ped Player = Game.LocalPlayer.Character;
 
         private List<Vector4> list = new List<Vector4>
-        { // x,y,z,heading
+        {
             new Vector4(-346.277161f, -364.4224f, 31.5574436f, 20),
             new Vector4(-251.366776f, -886.5289f, 30.66668f, 337),
             new Vector4(201.233871f, -997.1756f, 30.0919266f, 37),
@@ -70,8 +70,7 @@ namespace Polish_Callouts.Callouts
             CalloutMessage = "[PLC] " + Settings.getStringFromLocalization("Callouts", "Alcohol_Public_Name");
             CalloutPosition = spawnPoint;
             CalloutAdvisory = Settings.getStringFromLocalization("Callouts", "Alcohol_Public_Advisory");
-
-            ShowCalloutAreaBlipBeforeAccepting(spawnPoint, 40f);
+            ShowCalloutAreaBlipBeforeAccepting(spawnPoint, 70f);
 
             Functions.PlayScannerAudioUsingPosition("UNITS_RESPOND_CODE_02_01 IN_OR_ON_POSITION", spawnPoint);
             return base.OnBeforeCalloutDisplayed();
@@ -92,17 +91,13 @@ namespace Polish_Callouts.Callouts
             Blip.Alpha = 0.5f;
 
             Scenario = -1;
-            CalloutRunning = true;
-
             NativeFunction.Natives.TASK_START_SCENARIO_IN_PLACE(Suspect, "WORLD_HUMAN_DRINKING", 0, false);
 
+            _CalloutIsRunning = true;
             return base.OnCalloutAccepted();
         }
         public override void OnCalloutNotAccepted()
         {
-            if (Suspect) Suspect.Dismiss();
-            if (Blip) Blip.Delete();
-            if (SuspectBlip) SuspectBlip.Delete();
             base.OnCalloutNotAccepted();
         }
 
@@ -110,69 +105,82 @@ namespace Polish_Callouts.Callouts
         {
             GameFiber.StartNew(delegate
             {
-                float distance = Game.LocalPlayer.Character.DistanceTo(Suspect);
-                if (!SuspectBlip)
+                try
                 {
-                    if (distance <= 25f)
-                    {
-                        if (Blip) Blip.Delete();
-                        if (!Suspect.IsDead && !Functions.IsPedArrested(Suspect)) SuspectBlip = Suspect.AttachBlip();
-                        GameFiber.Wait(2000);
+                    if (_CalloutIsRunning)
+                    { 
+                        float distance = Player.DistanceTo(Suspect);
 
-                        if (!helpDisplayed)
+                        if (distance <= 25f)
                         {
-                            Game.DisplayHelp(Settings.getStringFromLocalization("HelpBox", "FinishCallout"), 10000);
-                            helpDisplayed = true;
+                            if (!SuspectBlip.Exists() && Suspect.Exists())
+                            {
+                                if (Blip.Exists()) { Blip.Delete(); }
+
+                                SuspectBlip = Suspect.AttachBlip();
+
+                                Game.DisplayHelp(string.Format(Settings.getStringFromLocalization("HelpBox", "FinishCallout"), Settings.FinishCalloutKey));
+                            }
+                        } else { GameFiber.Wait(0); }
+
+                        if (Scenario == -1 && !Player.IsInAnyVehicle(false))
+                        {
+                            if (distance <= 6f)
+                            {
+                                Scenario = 0;
+
+                                int rand_scenario = rand.Next(100);
+                                if (rand_scenario <= 40) // 40% szans na scenariusz
+                                {
+                                    int rand_pursuit = rand.Next(100);
+                                    if (rand_pursuit <= 60) // 60% szansy na atak
+                                    {
+                                        Suspect.Inventory.GiveNewWeapon(weaponList[rand.Next(weaponList.Length)], -1, true);
+                                        Suspect.RelationshipGroup = RelationshipGroup.Gang1;
+                                        Suspect.RelationshipGroup.SetRelationshipWith(RelationshipGroup.Cop, Relationship.Hate);
+                                        Suspect.RelationshipGroup.SetRelationshipWith(Player.RelationshipGroup, Relationship.Hate);
+
+                                        Suspect.Tasks.FightAgainstClosestHatedTarget(50, -1);
+
+                                        Scenario = 1;
+                                    }
+                                    else // 40% szans na ucieczke
+                                    {
+                                        Pursuit = Functions.CreatePursuit();
+                                        Functions.AddPedToPursuit(Pursuit, Suspect);
+                                        Functions.SetPursuitIsActiveForPlayer(Pursuit, true);
+
+                                        Scenario = 2;
+                                    }
+                                }
+
+                                int drinkingChance = rand.Next(100);
+                                if (drinkingChance <= 70) // 70% szans, że pijany
+                                {
+                                    NativeFunction.Natives.x95D2D383D5396B8A(Suspect, true);
+                                    Suspect.MovementAnimationSet = "move_m@drunk@verydrunk";
+                                }
+
+                                GameFiber.Wait(2000);
+
+                            } else { GameFiber.Wait(0); }
+                        }
+
+                        if (Game.IsKeyDown(Settings.FinishCalloutKey) || (Suspect.Exists() && (Suspect.IsDead || Functions.IsPedArrested(Suspect))) || Player.IsDead)
+                        {
+                            End();
+                            GameFiber.Yield();
                         }
                     }
-                    else
-                    {
-                        if (helpDisplayed)
-                        {
-                            Game.HideHelp();
-                            helpDisplayed = false;
-                        }
-                    }
-                }
-    
-                if (distance <= 5f && Scenario == -1 && !Game.LocalPlayer.Character.IsInAnyVehicle(false))
+                } catch (Exception e)
                 {
-                    Scenario = 0;
+                    Game.LogTrivial("[PLC] PolishCallout ERROR!!!!");
+                    Game.LogTrivial("ERROR OCCURED IN: ~y" + this);
+                    string error = e.ToString();
+                    Game.LogTrivial("ERROR: ~r" + e);
 
-                    int rand_scenario = rand.Next(100);
-                    if (rand_scenario <= 40) // 40% szansy na scenariusz
-                    {
-                        int rand_pursuit = rand.Next(100);
-                        if (rand_pursuit <= 60) // 60% szansy na atak
-                        {
-                            Suspect.Inventory.GiveNewWeapon(new WeaponAsset(weaponList[rand.Next(weaponList.Length)]), 500, true);
-                            Suspect.Tasks.FightAgainst(Game.LocalPlayer.Character);
-
-                            Scenario = 1;
-                        }
-                        else // 40% szansy na ucieczke
-                        {
-                            Pursuit = Functions.CreatePursuit();
-                            Functions.AddPedToPursuit(Pursuit, Suspect);
-                            Functions.SetPursuitIsActiveForPlayer(Pursuit, true);
-
-                            Scenario = 2;
-                        }
-                    }
-
-                    int drinkingChance = rand.Next(100);
-                    if (drinkingChance <= 70) // 70% szans, że jest pijany
-                    {
-                        NativeFunction.Natives.x95D2D383D5396B8A(Suspect, true);
-                        Suspect.MovementAnimationSet = "move_m@drunk@verydrunk";
-                    }
-                }
-
-                if (CalloutRunning && ((Suspect && (Suspect.IsDead || Functions.IsPedArrested(Suspect))) || Game.LocalPlayer.Character.IsDead))
-                {
-                    CalloutRunning = false;
+                    Game.DisplayNotification("[PLC] ~rERROR ~woccuerd, callout has been aborted. Check the ~g.log ~wfile for more information");
                     End();
-                    GameFiber.Yield();
                 }
             }, "[PLC] Alcohol_in_public");
 
@@ -181,14 +189,13 @@ namespace Polish_Callouts.Callouts
 
         public override void End()
         {
-            if (SuspectBlip) SuspectBlip.Delete(); SuspectBlip = null;
-            if (Suspect) Suspect.Dismiss();
-            if (Blip) Blip.Delete(); Blip = null;
+            if (Suspect.Exists()) { Suspect.Dismiss(); }
+            if (SuspectBlip.Exists()) { SuspectBlip.Delete(); }
+            if (Blip.Exists()) { Blip.Delete(); }
 
-            if (helpDisplayed)
-                Game.HideHelp();
+            _CalloutIsRunning = false;
 
-            if (!Game.LocalPlayer.Character.IsDead)
+            if (!Player.IsDead)
                 Functions.PlayScannerAudio("ALL_UNITS_CODE4 NO_FURTHER_UNITS_REQUIRED");
 
             Game.DisplayNotification("~b~Code 4. ~w~No further units required");
