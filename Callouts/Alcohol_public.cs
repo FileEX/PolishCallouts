@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using PolishCallouts.Usefuls;
 using System.Drawing;
+using System.Drawing.Text;
 
 namespace Polish_Callouts.Callouts
 {
@@ -23,7 +24,7 @@ namespace Polish_Callouts.Callouts
         private bool _CalloutIsRunning;
         private Ped Player = Game.LocalPlayer.Character;
 
-        private List<Vector4> list = new List<Vector4>
+        private Vector4[] list =
         {
             new Vector4(-346.277161f, -364.4224f, 31.5574436f, 20),
             new Vector4(-251.366776f, -886.5289f, 30.66668f, 337),
@@ -61,7 +62,7 @@ namespace Polish_Callouts.Callouts
 
         private string[] pedModels = new string[] { "a_m_m_trampbeac_01", "a_m_m_tramp_01", "a_m_o_soucent_03", "a_m_m_genfat_01", "a_m_m_rurmeth_01", "a_m_m_salton_04", "a_m_y_cyclist_01", "a_m_m_mlcrisis_01", "a_m_y_stbla_02", "a_m_o_acult_02", "a_f_y_soucent_01", "a_f_m_skidrow_01", "g_f_y_families_01", "g_f_y_vagos_01", "g_f_y_ballas_01", "g_m_y_ballasout_01", "ig_floyd", "ig_trafficwarden" };
         private string[] weaponList = new string[] { "WEAPON_BOTTLE", "WEAPON_KNIFE", "WEAPON_SWITCHBLADE", "WEAPON_DAGGER", "WEAPON_UNARMED", "WEAPON_PISTOL" };
-
+        
         public override bool OnBeforeCalloutDisplayed()
         {
             LocIndex = Usefuls.getNearestLocationIndex(list);
