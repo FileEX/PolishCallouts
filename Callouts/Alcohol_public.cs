@@ -176,11 +176,11 @@ namespace Polish_Callouts.Callouts
                 } catch (Exception e)
                 {
                     Game.LogTrivial("[PLC] PolishCallout ERROR!!!!");
-                    Game.LogTrivial("ERROR OCCURED IN: ~y~" + this);
+                    Game.LogTrivial("ERROR OCCURED IN: " + this);
                     string error = e.ToString();
-                    Game.LogTrivial("ERROR: ~r~" + e);
+                    Game.LogTrivial("ERROR: " + e);
 
-                    Game.DisplayNotification("[PLC] ~r~ERROR ~woccuerd, callout has been aborted. Check the ~g~.log ~w~file for more information");
+                    Game.DisplayNotification("[PLC] ~r~ERROR ~w~occuerd, callout has been aborted. Check the ~g~.log ~w~file for more information");
                     End();
                 }
             }, "[PLC] Alcohol_in_public");
