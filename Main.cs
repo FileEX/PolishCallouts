@@ -1,9 +1,9 @@
 ﻿using System.Reflection;
 using Rage;
 using LSPD_First_Response.Mod.API;
-using Polish_Callouts.Callouts;
+using PolishCallouts.Callouts;
 
-namespace Polish_Callouts
+namespace PolishCallouts
 {
     public class Main : Plugin
     {

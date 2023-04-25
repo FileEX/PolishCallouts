@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Polish_Callouts
+namespace PolishCallouts
 {
     internal static class Settings
     {

@@ -1,20 +1,21 @@
-﻿using Rage;
+﻿using LSPD_First_Response.Engine;
+using Rage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PolishCallouts.Usefuls
+namespace PolishCallouts
 {
-    public static class Usefuls
+    internal static class Usefuls
     {
-        public static int getNearestLocationIndex(Vector4[] spawnPoints)
+        internal static int getNearestLocationIndex(Vector4[] spawnPoints)
         {
-            int loc = 0;
+            int index = 0;
             Vector3 playerPosition = Game.LocalPlayer.Character.Position;
 
-            float dist = Vector3.Distance(playerPosition, new Vector3(spawnPoints[loc].X, spawnPoints[loc].Y, spawnPoints[loc].Z));
+            float dist = Vector3.Distance(playerPosition, new Vector3(spawnPoints[index].X, spawnPoints[index].Y, spawnPoints[index].Z));
 
             for (int i = 1; i < spawnPoints.Length; i++)
             {
@@ -22,11 +23,31 @@ namespace PolishCallouts.Usefuls
                 if (newDist <= dist)
                 {
                     dist = newDist;
-                    loc = i;
+                    index = i;
                 }
             }
 
-            return loc;
+            return index;
+        }
+
+        internal static int getNearestLocationIndex(Vector3[] spawnPoints)
+        {
+            int index = 0;
+            Vector3 playerPosition = Game.LocalPlayer.Character.Position;
+
+            float dist = Vector3.Distance(playerPosition, spawnPoints[index]);
+
+            for (int i = 1; i < spawnPoints.Length; i++)
+            {
+                var newDist = Vector3.Distance(playerPosition, spawnPoints[index]);
+                if (newDist <= dist)
+                {
+                    dist = newDist;
+                    index = i;
+                }
+            }
+
+            return index;
         }
     }
 }
