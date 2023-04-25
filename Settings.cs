@@ -1,4 +1,7 @@
-﻿using Rage;
+﻿using LSPD_First_Response.Mod.API;
+using Rage;
+using System;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace Polish_Callouts
@@ -11,6 +14,8 @@ namespace Polish_Callouts
 
         private static InitializationFile LocalizationFile;
         private static string Localization = "pl";
+
+        public static bool STP = false;
 
         internal static void Load()
         {
@@ -30,6 +35,8 @@ namespace Polish_Callouts
             LocalizationFile = new InitializationFile($"Plugins/LSPDFR/PolishCallouts/lang/{Localization}.ini");
             LocalizationFile.Create();
 
+            STP = isPluginLoaded("Stop The Ped");
+
             Game.LogTrivial("[PLC] The .INI file has been loaded successfully.");
         }
 
@@ -37,5 +44,7 @@ namespace Polish_Callouts
         {
             return LocalizationFile.ReadString(section, key);
         }
+
+        private static Func<string, bool> isPluginLoaded = pluginName => Functions.GetAllUserPlugins().Any(assembly => assembly.GetName().Name.Equals(pluginName));
     }
 }

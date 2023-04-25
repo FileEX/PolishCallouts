@@ -62,7 +62,7 @@ namespace Polish_Callouts.Callouts
 
         private string[] pedModels = new string[] { "a_m_m_trampbeac_01", "a_m_m_tramp_01", "a_m_o_soucent_03", "a_m_m_genfat_01", "a_m_m_rurmeth_01", "a_m_m_salton_04", "a_m_y_cyclist_01", "a_m_m_mlcrisis_01", "a_m_y_stbla_02", "a_m_o_acult_02", "a_f_y_soucent_01", "a_f_m_skidrow_01", "g_f_y_families_01", "g_f_y_vagos_01", "g_f_y_ballas_01", "g_m_y_ballasout_01", "ig_floyd", "ig_trafficwarden" };
         private string[] weaponList = new string[] { "WEAPON_BOTTLE", "WEAPON_KNIFE", "WEAPON_SWITCHBLADE", "WEAPON_DAGGER", "WEAPON_UNARMED", "WEAPON_PISTOL" };
-        
+
         public override bool OnBeforeCalloutDisplayed()
         {
             LocIndex = Usefuls.getNearestLocationIndex(list);
@@ -160,6 +160,9 @@ namespace Polish_Callouts.Callouts
                                 {
                                     NativeFunction.Natives.x95D2D383D5396B8A(Suspect, true);
                                     Suspect.MovementAnimationSet = "move_m@drunk@verydrunk";
+
+                                    if (Settings.STP)
+                                        StopThePed.API.Functions.setPedAlcoholOverLimit(Suspect, true);
                                 }
 
                                 GameFiber.Wait(2000);

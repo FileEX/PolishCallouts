@@ -37,6 +37,9 @@
     <Reference Include="RagePluginHookSDK">
       <HintPath>..\..\..\Documents\References\RagePluginHookSDK.dll</HintPath>
     </Reference>
+    <Reference Include="StopThePed">
+      <HintPath>..\..\..\Documents\References\StopThePed.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
