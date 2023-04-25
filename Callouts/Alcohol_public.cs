@@ -4,11 +4,10 @@ using LSPD_First_Response.Mod.Callouts;
 using Rage.Native;
 using System;
 using System.Collections.Generic;
-using PolishCallouts.Usefuls;
 using System.Drawing;
 using System.Drawing.Text;
 
-namespace Polish_Callouts.Callouts
+namespace PolishCallouts.Callouts
 {
     [CalloutInfo("[PLC] Spozywanie alkoholu w m. publicznym", CalloutProbability.High)]
     public class Alcohol_public : Callout
