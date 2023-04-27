@@ -158,7 +158,10 @@ namespace PolishCallouts.Callouts
                                     Suspect.MovementAnimationSet = "move_m@drunk@verydrunk";
 
                                     if (Settings.STP)
+                                    {
                                         StopThePed.API.Functions.setPedAlcoholOverLimit(Suspect, true);
+                                        Suspect.Metadata.stpAlcoholDetected = true;
+                                    }
                                 }
 
                                 GameFiber.Wait(2000);
